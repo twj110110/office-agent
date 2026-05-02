@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Agent - 智能办公助手</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Office Agent</h1>
+            <p>基于智能Agent的全流程办公自动化助手</p>
+        </header>
+        
+        <div id="alertContainer"></div>
+        
+        <div class="app-container">
+            <aside class="sidebar">
+                <h3>功能菜单</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active" data-tab="docTab">文档生成</a></li>
+                    <li><a href="#" data-tab="agentTab">智能助手</a></li>
+                    <li><a href="#" data-tab="taskTab">任务管理</a></li>
+                    <li><a href="#" data-tab="toolsTab">工具箱</a></li>
+                </ul>
+                
+                <h3>快捷操作</h3>
+                <ul class="sidebar-menu">
+                    <li><a href="#" onclick="loadTemplate('work_summary')">工作总结模板</a></li>
+                    <li><a href="#" onclick="loadTemplate('report')">汇报材料模板</a></li>
+                    <li><a href="#" onclick="loadTemplate('notice')">通知模板</a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <!-- 标签页 -->
+                <div class="tabs">
+                    <button class="tab active" data-tab="docTab">文档生成</button>
+                    <button class="tab" data-tab="agentTab">智能助手</button>
+                    <button class="tab" data-tab="taskTab">任务管理</button>
+                    <button class="tab" data-tab="toolsTab">工具箱</button>
+                </div>
+                
+                <!-- 文档生成 -->
+                <div id="docTab" class="tab-content">
+                    <h2>智能文档生成</h2>
+                    
+                    <div class="editor-container">
+                        <div class="editor-panel">
+                            <div class="panel-header">配置与编辑</div>
+                            <div class="panel-body" style="overflow-y: auto;">
+                                <form id="docForm">
+                                    <div class="form-group">
+                                        <label>文档类型</label>
+                                        <select id="docType" required>
+                                            <option value="">请选择...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>标题</label>
+                                        <input type="text" id="docTitle" placeholder="请输入文档标题" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>内容要求</label>
+                                        <textarea id="docRequirements" placeholder="请描述文档的内容要求、重点、背景等信息..." required></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>关键词（用逗号分隔）</label>
+                                        <input type="text" id="docKeywords" placeholder="例如: 数字化转型, 工作总结, 2024">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>语气风格</label>
+                                        <select id="docTone">
+                                            <option value="formal">正式</option>
+                                            <option value="professional">专业</option>
+                                            <option value="casual">自然</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>预计字数</label>
+                                        <input type="number" id="docLength" value="2000" min="500" max="10000" step="500">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="enableValidation" checked>
+                                            启用多轮校验
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>校验轮数</label>
+                                        <input type="number" id="validationRounds" value="2" min="1" max="5">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary">
+                                        生成文档
+                                    </button>
+                                </form>
+                                
+                                <hr style="margin: 24px 0;">
+                                
+                                <div class="form-group">
+                                    <label>文档编辑</label>
+                                    <textarea id="docEditor" placeholder="生成的文档将显示在这里，您可以直接编辑..."></textarea>
+                                </div>
+                                
+                                <div id="docActions" style="display: none; gap: 12px; margin-top: 16px;">
+                                    <button class="btn btn-secondary" onclick="formatCurrentDocument()">格式化</button>
+                                    <button class="btn btn-secondary" onclick="validateCurrentDocument()">校验</button>
+                                    <button class="btn btn-outline" onclick="exportDocument('md')">导出MD</button>
+                                    <button class="btn btn-outline" onclick="exportDocument('txt')">导出TXT</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="editor-panel preview-panel">
+                            <div class="panel-header">预览</div>
+                            <div class="panel-body">
+                                <div id="docPreview" class="preview-content">
+                                    <p style="color: #94a3b8; text-align: center; padding: 40px;">
+                                        文档预览将显示在这里
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="validationResults" style="display: none; margin-top: 20px;"></div>
+                </div>
+                
+                <!-- 智能助手 -->
+                <div id="agentTab" class="tab-content" style="display: none;">
+                    <h2>智能办公助手</h2>
+                    
+                    <div class="chat-container" style="height: 500px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc;">
+                            <div class="chat-message assistant">
+                                <div class="message-content">
+                                    您好！我是您的智能办公助手。我可以帮您：<br>
+                                    • 生成各类办公文档<br>
+                                    • 分析并优化文档内容<br>
+                                    • 拆解复杂任务并执行<br>
+                                    • 提供写作建议和格式排版<br><br>
+                                    请问有什么可以帮您的？
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form id="chatForm" style="display: flex; gap: 12px; padding: 16px; border-top: 1px solid #e2e8f0; background: white;">
+                            <input type="text" id="chatInput" placeholder="输入您的问题或需求..." style="flex: 1;" required>
+                            <button type="submit" class="btn btn-primary">发送</button>
+                        </form>
+                    </div>
+                    
+                    <div class="quick-actions" style="margin-top: 20px;">
+                        <h4>快捷指令</h4>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+                            <button class="btn btn-outline" onclick="setChatInput('帮我写一份工作总结')">写工作总结</button>
+                            <button class="btn btn-outline" onclick="setChatInput('分析这段内容的问题')">内容分析</button>
+                            <button class="btn btn-outline" onclick="setChatInput('提取这段文字的关键点')">提取要点</button>
+                            <button class="btn btn-outline" onclick="setChatInput('帮我排版这段内容')">格式排版</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 任务管理 -->
+                <div id="taskTab" class="tab-content" style="display: none;">
+                    <h2>任务管理</h2>
+                    
+                    <form id="taskForm" style="margin-bottom: 24px;">
+                        <div class="form-group">
+                            <label>任务描述</label>
+                            <textarea id="taskDescription" placeholder="请描述您需要完成的任务，例如：撰写一份关于数字化转型的年度工作总结，需要包含工作完成情况、亮点成效、存在问题、下一步计划..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">创建并执行任务</button>
+                    </form>
+                    
+                    <div id="taskDisplay">
+                        <p style="color: #94a3b8; text-align: center; padding: 40px;">
+                            任务将在这里显示
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 工具箱 -->
+                <div id="toolsTab" class="tab-content" style="display: none;">
+                    <h2>工具箱</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h3>格式排版</h3>
+                            <p>自动将内容按照公文格式进行排版</p>
+                            <button class="btn btn-outline" style="margin-top: 12px;" onclick="showToolModal('format')">使用</button>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>内容校验</h3>
+                            <p>检查文档的逻辑性、准确性和规范性</p>
+                            <button class="btn btn-outline" style="margin-top: 12px;" onclick="showToolModal('validate')">使用</button>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>要点提取</h3>
+                            <p>从长文本中提取关键要点和核心信息</p>
+                            <button class="btn btn-outline" style="margin-top: 12px;" onclick="showToolModal('extract')">使用</button>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>情感分析</h3>
+                            <p>分析文本的情感倾向和语气特征</p>
+                            <button class="btn btn-outline" style="margin-top: 12px;" onclick="showToolModal('sentiment')">使用</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <footer>
+            <p>&copy; 2024 Office Agent. MIT License.</p>
+        </footer>
+    </div>
+    
+    <script src="/static/js/app.js"></script>
+    <script>
+        // 辅助函数
+        function setChatInput(text) {
+            document.getElementById('chatInput').value = text;
+            document.getElementById('chatInput').focus();
+        }
+        
+        function loadTemplate(type) {
+            const templates = {
+                work_summary: {
+                    title: '2024年度工作总结',
+                    requirements: '请撰写一份年度工作总结，包含：1) 全年工作概述；2) 主要工作完成情况，包含具体数据和案例；3) 工作亮点与创新；4) 存在的问题与不足；5) 下一年度工作计划。'
+                },
+                report: {
+                    title: '关于XX工作的情况汇报',
+                    requirements: '撰写一份工作汇报材料，面向领导汇报近期工作进展，需要包含背景说明、主要做法、取得成效、存在问题、下一步打算等内容。'
+                },
+                notice: {
+                    title: '关于开展XX工作的通知',
+                    requirements: '撰写一份正式通知，明确通知事由、具体要求、时间安排、联系方式等内容，语言简洁规范。'
+                }
+            };
+            
+            const template = templates[type];
+            if (template) {
+                document.getElementById('docTitle').value = template.title;
+                document.getElementById('docRequirements').value = template.requirements;
+                document.getElementById('docType').value = type;
+                showAlert('模板已加载', 'success');
+            }
+        }
+        
+        function showToolModal(tool) {
+            // 切换到文档生成标签
+            document.querySelector('.tab[data-tab="docTab"]').click();
+            showAlert('请在文档编辑区域输入内容后使用相关功能', 'info');
+        }
+    </script>
+</body>
+</html>
